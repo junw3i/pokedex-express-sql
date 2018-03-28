@@ -20,7 +20,7 @@ module.exports = (app) => {
   app.get('/', async (req, res) => {
 
     // query database for all pokemon
-    let sqlResults = await client.query("select * from pokemon;");
+    let sqlResults = await client.query("select * from pokemon order by id asc;");
 
     // respond with HTML page displaying all pokemon
     res.render("home", {pokemon: sqlResults.rows});
@@ -58,8 +58,32 @@ module.exports = (app) => {
     res.render("new");
   });
 
-  app.get('/:id', async (req, res) => {
+  app.get('/:id/edit', async (req, res) => {
     let sqlResults = await client.query(`select * from pokemon where id=${req.params.id};`);
+    console.log(sqlResults.rows[0]);
+    res.render("edit", {pokemon: sqlResults.rows[0]});
+  });
+
+  app.put('/:id', async (req, res) => {
+    let id = req.params.id;
+    console.log(req.body);
+    // let values = [req.body.num, req.body.name, req.body.img, req.body.height, req.body.weight];
+    try {
+      await client.query(`update pokemon set num='${req.body.num}', name='${req.body.name}', img='${req.body.img}', weight='${req.body.weight}', height='${req.body.height}' where id=${req.params.id};`);
+    } catch(err) {
+      console.log(err.stack);
+    }
+
+    res.redirect('/');
+  });
+
+  app.get('/:id', async (req, res) => {
+    try {
+      let sqlResults = await client.query(`select * from pokemon where id=${req.params.id};`);
+    } catch(err) {
+      console.log(err.stack);
+    }
+
     res.render("pokemon", {pokemon: sqlResults.rows[0]});
   });
 
